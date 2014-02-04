@@ -313,12 +313,18 @@ class NukeEditor(ToolPane):
     ###########################################################################
     # holla back -- the simple callbacks 
     def writePose(self, pose, dt):
-        # set pose size -- IMPORTANT!
-        self.port.execute(253, 7, [self.parent.project.count])
-        # download the pose
-        self.port.execute(253, 8, [0] + project.extract(pose))                 
-        self.port.execute(253, 9, [0, dt%256, dt>>8,255,0,0])                
-        self.port.execute(253, 10, list())
+        if not self.port.hasInterpolation:
+            for servo in range(self.parent.project.count):
+                value = pose[servo + 1]
+                self.port.setReg(servo + 1, P_GOAL_POSITION_L, 
+                                 [value%256, value>>8])
+        else:
+            # set pose size -- IMPORTANT!
+            self.port.execute(253, 7, [self.parent.project.count])
+            # download the pose
+            self.port.execute(253, 8, [0] + project.extract(pose))
+            self.port.execute(253, 9, [0, dt%256, dt>>8,255,0,0])                
+            self.port.execute(253, 10, list())
     def doSignTest(self, e=None):
         """ Do the sign test, let's hope we pass. This is handled by the model. """
         if self.doChecks(["project","port","ik"]) > 0:
