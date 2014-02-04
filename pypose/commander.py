@@ -120,10 +120,10 @@ class Commander(wx.Frame):
     def sendPacket(self, right_vertical, right_horizontal, left_vertical, left_horizontal, Buttons):
         # send output
         self.ser.write('\xFF')
-        self.ser.write(chr(right_vertical+128))
-        self.ser.write(chr(right_horizontal+128))
-        self.ser.write(chr(left_vertical+128))
-        self.ser.write(chr(left_horizontal+128))
+        self.ser.write(chr(min(255, right_vertical+128)))
+        self.ser.write(chr(min(255, right_horizontal+128)))
+        self.ser.write(chr(min(255, left_vertical+128)))
+        self.ser.write(chr(min(255, left_horizontal+128)))
         self.ser.write(chr(Buttons))
         self.ser.write(chr(0))
         self.ser.write(chr(255 - ((right_vertical+right_horizontal+left_vertical+left_horizontal+Buttons)%256)))
@@ -139,4 +139,3 @@ if __name__ == "__main__":
     app = wx.PySimpleApp()
     frame = Commander(None, ser, True)
     app.MainLoop()
-

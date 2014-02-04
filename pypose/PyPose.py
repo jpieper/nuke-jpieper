@@ -26,6 +26,7 @@ import serial
 
 from ax12 import *
 from driver import Driver
+from gazebo_driver import GazeboDriver
 
 from PoseEditor import *
 from SeqEditor import *
@@ -277,6 +278,7 @@ class editor(wx.Frame):
         """ open a serial port """
         if self.port == None:
             self.findPorts()
+            self.ports += ['Gazebo']
         dlg = wx.SingleChoiceDialog(self,'Port (Ex. COM4 or /dev/ttyUSB0)','Select Communications Port',self.ports)
         #dlg = PortDialog(self,'Select Communications Port',self.ports)
         if dlg.ShowModal() == wx.ID_OK:
@@ -284,12 +286,17 @@ class editor(wx.Frame):
                 self.port.ser.close()
             print "Opening port: " + self.ports[dlg.GetSelection()]
             try:
+                port_name = self.ports[dlg.GetSelection()]
+                if port_name == 'Gazebo':
+                    self.port = GazeboDriver()
+                else:
                 # TODO: add ability to select type of driver
                 self.port = Driver(self.ports[dlg.GetSelection()], 38400, True) # w/ interpolation
                 self.panel.port = self.port
                 self.panel.portUpdated()
                 self.sb.SetStatusText(self.ports[dlg.GetSelection()] + "@38400",1)
-            except:
+            except RuntimeError as e:
+                print 'Error opening port:', e
                 self.port = None
                 self.sb.SetBackgroundColour('RED')
                 self.sb.SetStatusText("Could Not Open Port",0) 
@@ -410,4 +417,3 @@ if __name__ == "__main__":
     app = wx.PySimpleApp()
     frame = editor()
     app.MainLoop()
-
